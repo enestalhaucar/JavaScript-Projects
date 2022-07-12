@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"referrerpolicy="no-referrer" />
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    </head>
+    <style>
+        .dropdown-toggle::after {
+            display: none;
+        }
+        .task{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .task label.checked {
+            text-decoration: line-through;
+        }
+        .controls{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .filters span {
+            margin-right: 15px;
+        }
+        .filters span.active{
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+            padding: 0.25rem 0.5rem;
+            line-height: 1.5;
+            border-radius: 0.25rem;
+        }
+    </style>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                        To Do List App
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="input-group">
+                                    <input type="text" id="txtTaskName" class="form-control">
+                                    <button type="submit" id="btnAddNewTask" class="btn btn-primary">Add Task</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header controls">
+                            <div class="filters">
+                                <span class="active" id="all">All</span>
+                                <span id="pending">Things To Do </span>
+                                <span id="completed">Completed</span>
+                            </div>
+                            <button class="btn btn-danger float-end" id="btnClear">
+                                Delete All
+                            </button>
+                        </div>
+                        <ul id="task-list" class="list-group list-group-flush">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-kjU+l4N0Yf4ZOJErLsIcvOU2qSb74wXpOhqTvwVx3OElZRweTnQ6d31fXEoRD1Jy" crossorigin="anonymous"></script>
+    <script>
+
+        
+        let gorevListesi = [];
+
+        if(localStorage.getItem("gorevListesi") != null){
+            gorevListesi = JSON.parse(localStorage.getItem("gorevListesi"));
+        }
+
+
+        let editId;
+        let isEditTask = false;
+        const taskInput = document.querySelector("#txtTaskName");
+        const btnClear = document.querySelector("#btnClear");
+        const filters = document.querySelectorAll(".filters span");
+
+        
+        displayTasks("all");
+
+        function displayTasks(filter) {
+            
+            let ul = document.getElementById("task-list");
+            ul.innerHTML = "";
+            if(gorevListesi == 0){
+                ul.innerHTML = "<p class= 'p-3 m-0'> Yapılacaklar listeniz boş.  </p>"
+            }
+            else{
+                for(let gorev of gorevListesi) {
+
+                    let completed = gorev.durum == "completed" ? "checked" : "";
+
+                    if (filter == gorev.durum || filter == "all"){
+                        let li = `
+                                    <li class="task list-group-item">
+                                        <div class="form-check">
+                                            <input type="checkbox" onclick="updateStatus(this)" id="${gorev.id}" class="form-check-input " ${completed}>
+                                            <label for="${gorev.id}" class="form-check-label ${completed}">${gorev.gorevAdi}</label>
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-link dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fa-solid fa-ellipsis"></i>
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                                <li><a onclick  = 'editTask(${gorev.id}, "${gorev.gorevAdi}")'class="dropdown-item" href="#"><i class="fa-solid fa-pen"></i> Edit</a></li>
+                                                <li><a onclick = 'deleteTask(${gorev.id})' class="dropdown-item" href="#"><i class="fa-solid fa-trash-can"></i> Delete</a></li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                `;
+                        ul.insertAdjacentHTML("beforeend", li);           
+                    }                
+                }
+            }
+        }    
+
+        document.querySelector("#btnAddNewTask").addEventListener("click", newTask);
+        document.querySelector("#btnAddNewTask").addEventListener("keypress", function(){
+            if (event.key == "Enter") {
+                document.getElementById("btnAddNewTask").click();
+            }
+        });
+
+        for (let span of filters) {
+            span.addEventListener("click", function(){
+                for (let span of filters) {
+                    span.classList.remove("active");
+                }
+                this.classList.add("active");
+                displayTasks(span.id);
+            });
+        }
+
+        function newTask(event) {
+            
+            
+
+            if(taskInput.value == "") {
+                alert("görev girmelisiniz");
+            } else {
+                if(!isEditTask){
+                    gorevListesi.push({"id": gorevListesi.length + 1, "gorevAdi": taskInput.value, "durum": "pending"});
+                }
+                else {
+                    gorevListesi[editId - 1].gorevAdi = taskInput.value;
+                    isEditTask = false;
+                }
+                taskInput.value = "";
+                displayTasks(document.querySelector("span.active").id);
+                
+            }
+
+            event.preventDefault();
+        }       
+
+        function deleteTask(id){
+            let deleteId;
+            // for (let i = 0; i < gorevListesi.length; i++) {
+            //     if(gorevListesi[i].id == id) {
+            //         deleteId = i;
+            //     }
+            // }
+            // deleteId = gorevListesi.findIndex(function(element){
+            //     return element.id == id;
+            // });
+            deleteId = gorevListesi.findIndex(element => element.id == id); // modern js syntax
+            gorevListesi.splice(deleteId, 1);
+            displayTasks(document.querySelector("span.active").id);
+            localStorage.setItem("gorevListesi", JSON.stringify(gorevListesi));
+        }
+        
+        function editTask(taskId, taskName){
+            editId = taskId;
+            isEditTask = true;
+            taskInput.value = taskName;
+            taskInput.focus();
+            taskInput.classList.add("active")
+        }
+
+        btnClear.addEventListener("click", function(){
+            gorevListesi.splice(0, gorevListesi.length);
+            localStorage.setItem("gorevListesi", JSON.stringify(gorevListesi));
+            displayTasks();
+            
+        });
+
+        function updateStatus(checkbox){
+            let id = checkbox.id;
+            let status = checkbox.checked;
+            gorevListesi[id - 1].durum = status ? "completed" : "pending";
+            displayTasks(document.querySelector("span.active").id);
+            localStorage.setItem("gorevListesi", JSON.stringify(gorevListesi));
+        }
+
+
+
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+
+*{margin: 0; padding: 0;box-sizing: border-box;}
+button:focus{outline: none;}
+.slider{
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1s;
+}
+.slide:nth-child(1){
+    background: url(bg1.jpg) no-repeat center;
+    background-size: cover;
+}
+.slide:nth-child(2){
+    background: url(bg2.jpg) no-repeat center;
+    background-size: cover;
+}
+.slide:nth-child(3){
+    background: url(bg3.jpg) no-repeat center;
+    background-size: cover;
+}
+
+.slide-text{
+    position: absolute;
+    bottom: 50px;
+    left: 50px;
+    opacity: 0;
+    color: #fff;
+    font-size: large;
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+}
+.active {
+    opacity: 1;
+}
+.slide.active .slide-text{
+    opacity: 1;
+}
+.indicators{
+    position: absolute;
+    bottom: 60px;
+    right: 40px;
+    padding: 10px;
+
+}
+.indicators button{
+    width: 50px;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    margin: 0 5px;
+    cursor: pointer;
+}
+.indicators button:hover{
+    background-color: rgba(0, 0, 0, 0.8);
+    transform: rotate(360deg);
+    transition: transform 1s;
+}
+.indicators i {
+    color: #fff;
+    font-size: large;
+    justify-content: center;
+    align-items: center;
+}
